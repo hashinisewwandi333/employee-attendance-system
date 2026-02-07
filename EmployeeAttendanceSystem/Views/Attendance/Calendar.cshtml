@@ -1,0 +1,316 @@
+﻿@model IEnumerable<EmployeeAttendanceSystem.Models.Attendance>
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Attendance Calendar";
+
+    int currentYear = ViewBag.CurrentYear ?? DateTime.Now.Year;
+    int currentMonth = ViewBag.CurrentMonth ?? DateTime.Now.Month;
+
+    var employees = ViewBag.Employees as List<EmployeeAttendanceSystem.Models.Employee>
+                    ?? new List<EmployeeAttendanceSystem.Models.Employee>();
+
+    int? selectedEmployeeId = ViewBag.EmployeeId;
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">
+                    <i class="bi bi-calendar3"></i> Attendance Calendar - 
+                    @CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(currentMonth) @currentYear
+                </h3>
+                <a href="@Url.Action("Create", "Attendance")" class="btn btn-light btn-sm">
+                    <i class="bi bi-plus-circle"></i> Add Attendance
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <!-- Filter Section -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Select Month</label>
+                    <input type="month"
+                           class="form-control"
+                           id="monthSelector"
+                           value="@currentYear.ToString("0000")-@currentMonth.ToString("00")" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Select Employee</label>
+                    <select class="form-select" id="employeeSelector">
+                        <option value="">All Employees</option>
+                        @foreach (var emp in employees)
+                        {
+                                <option value="@emp.Id" selected="@(selectedEmployeeId == emp.Id)">
+                                @emp.Name @(!string.IsNullOrEmpty(emp.Position) ? $"({emp.Position})" : "")
+                                </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" onclick="applyFilters()">
+                        <i class="bi bi-filter"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            @{
+                var monthAttendances = Model?.ToList() ?? new List<EmployeeAttendanceSystem.Models.Attendance>();
+                var presentCount = monthAttendances.Count(a => a.Status?.ToLower() == "present");
+                var absentCount = monthAttendances.Count(a => a.Status?.ToLower() == "absent");
+                var lateCount = monthAttendances.Count(a => a.Status?.ToLower() == "late");
+            }
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@presentCount</h5>
+                            <p class="card-text">Present Days</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@absentCount</h5>
+                            <p class="card-text">Absent Days</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@lateCount</h5>
+                            <p class="card-text">Late Days</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@monthAttendances.Count</h5>
+                            <p class="card-text">Total Records</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Grid -->
+            @{
+                int daysInMonth = DateTime.DaysInMonth(currentYear, currentMonth);
+                DateTime firstDay = new DateTime(currentYear, currentMonth, 1);
+                int startDay = (int)firstDay.DayOfWeek;
+
+                // Day names (Sunday first)
+                var dayNames = new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+            }
+
+            <div class="calendar-container">
+                <!-- Calendar Header -->
+                <div class="row calendar-header">
+                    @foreach (var dayName in dayNames)
+                    {
+                            <div class="col text-center fw-bold p-2 border bg-light">
+                            @dayName
+                            </div>
+                    }
+                </div>
+
+                <!-- Calendar Days -->
+                <div class="row">
+                    @for (int i = 0; i < startDay; i++)
+                    {
+                            <div class="col border p-2 bg-light"></div>
+                    }
+
+                    @for (int day = 1; day <= daysInMonth; day++)
+                    {
+                        var date = new DateTime(currentYear, currentMonth, day);
+                        var dayAttendances = Model?
+                            .Where(a => a.Date.Date == date.Date)
+                            .ToList() ?? new List<EmployeeAttendanceSystem.Models.Attendance>();
+
+                            <div class="col border p-2 calendar-day @(date.Date == DateTime.Today.Date ? "today" : "")">
+                                <div class="day-number">@day</div>
+
+                            @if (dayAttendances.Any())
+                            {
+                                        <div class="attendance-list mt-1">
+                                    @foreach (var att in dayAttendances)
+                                    {
+                                        // Determine badge color based on status
+                                        string badgeClass = "bg-secondary";
+                                        if (att.Status != null)
+                                        {
+                                            switch (att.Status.ToLower())
+                                            {
+                                                case "present":
+                                                    badgeClass = "bg-success";
+                                                    break;
+                                                case "absent":
+                                                    badgeClass = "bg-danger";
+                                                    break;
+                                                case "late":
+                                                    badgeClass = "bg-warning";
+                                                    break;
+                                                case "leave":
+                                                    badgeClass = "bg-info";
+                                                    break;
+                                                case "half day":
+                                                    badgeClass = "bg-primary";
+                                                    break;
+                                            }
+                                        }
+
+                                                    <div class="attendance-item mb-1">
+                                                        <span class="badge @badgeClass d-block text-truncate" 
+                                                              title="@att.Employee?.Name - @att.Status">
+                                                @(att.Employee?.Name ?? "Unknown")
+                                                        </span>
+                                            @if (att.CheckOut.HasValue)
+                                            {
+                                                                <small class="text-muted d-block">
+                                                    @att.CheckIn.ToString("HH:mm") - @att.CheckOut.Value.ToString("HH:mm")
+                                                                </small>
+                                            }
+                                                    </div>
+                                    }
+                                        </div>
+                            }
+                            else
+                            {
+                                        <div class="text-muted small mt-1">No attendance</div>
+                            }
+
+                                <!-- Add button for this day -->
+                                <a href="@Url.Action("Create", "Attendance", new { date = date.ToString("yyyy-MM-dd") })" 
+                                   class="btn btn-sm btn-outline-primary mt-2 w-100">
+                                    <i class="bi bi-plus"></i> Add
+                                </a>
+                            </div>
+
+                        // Start new row every 7 days
+                        if ((startDay + day) % 7 == 0 && day != daysInMonth)
+                        {
+                            @:</div><div class="row">
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <!-- Legend -->
+            <div class="row">
+                <div class="col-md-12">
+                    <h6>Legend:</h6>
+                    <span class="badge bg-success me-2">Present</span>
+                    <span class="badge bg-danger me-2">Absent</span>
+                    <span class="badge bg-warning me-2">Late</span>
+                    <span class="badge bg-info me-2">Leave</span>
+                    <span class="badge bg-primary me-2">Half Day</span>
+                    <span class="badge bg-secondary me-2">Other</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+        <style>
+            .calendar-container {
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                overflow: hidden;
+            }
+
+            .calendar-day {
+                min-height: 120px;
+                background-color: white;
+            }
+
+            .calendar-day.today {
+                background-color: #e7f3ff;
+                border: 2px solid #0d6efd !important;
+            }
+
+            .day-number {
+                font-weight: bold;
+                font-size: 1.1em;
+                margin-bottom: 5px;
+            }
+
+            .attendance-list {
+                max-height: 60px;
+                overflow-y: auto;
+                font-size: 0.85em;
+            }
+
+            .attendance-item {
+                cursor: pointer;
+            }
+
+            .attendance-item:hover .badge {
+                opacity: 0.8;
+            }
+
+            .calendar-header {
+                background-color: #f8f9fa;
+                border-bottom: 2px solid #dee2e6;
+            }
+        </style>
+}
+
+@section Scripts {
+        <script>
+            function applyFilters() {
+                const monthInput = document.getElementById('monthSelector');
+                const employeeSelect = document.getElementById('employeeSelector');
+
+                const monthValue = monthInput.value;
+                const employeeId = employeeSelect.value;
+
+                let url = '@Url.Action("Calendar", "Attendance")';
+                let params = [];
+
+                if (monthValue) {
+                    const [year, month] = monthValue.split('-');
+                    params.push(`year=${year}`);
+                    params.push(`month=${month}`);
+                }
+
+                if (employeeId) {
+                    params.push(`employeeId=${employeeId}`);
+                }
+
+                if (params.length > 0) {
+                    url += '?' + params.join('&');
+                }
+
+                window.location.href = url;
+            }
+
+            // Auto-apply when month changes
+            document.getElementById('monthSelector').addEventListener('change', applyFilters);
+
+            // Auto-apply when employee changes
+            document.getElementById('employeeSelector').addEventListener('change', applyFilters);
+
+            // Add click event to attendance items for details
+            document.addEventListener('DOMContentLoaded', function() {
+                const items = document.querySelectorAll('.attendance-item');
+                items.forEach(item => {
+                    item.addEventListener('click', function() {
+                        // You can implement a modal or redirect to details page
+                        alert('Attendance details feature coming soon!');
+                    });
+                });
+            });
+        </script>
+}

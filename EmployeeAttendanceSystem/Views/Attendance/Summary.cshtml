@@ -1,0 +1,282 @@
+﻿@{
+    ViewData["Title"] = "Attendance Summary";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt"></i> Employee Attendance Management System
+                    </h2>
+                    <p class="mb-0">Efficiently manage employee attendance and generate reports</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-success shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Total Employees</h5>
+                    <h1 class="text-success display-4">@ViewBag.TotalEmployees</h1>
+                    <p class="card-text">Registered in system</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-info shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Attendance Records</h5>
+                    <h1 class="text-info display-4">@ViewBag.TotalRecords</h1>
+                    <p class="card-text">Total records stored</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-warning shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Current Month</h5>
+                    <h2 class="text-warning">@ViewBag.CurrentMonth</h2>
+                    <p class="card-text">Monthly Records: @ViewBag.MonthlyTotal</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-danger shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Today's Date</h5>
+                    <h2 class="text-danger">@ViewBag.TodaysDate</h2>
+                    <p class="card-text">Present Today: @ViewBag.PresentToday/@ViewBag.TotalEmployees</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="@Url.Action("Create", "Attendance")" class="btn btn-success btn-lg w-100 py-3">
+                                <i class="fas fa-user-plus"></i><br>
+                                <small>Add Employee</small>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="@Url.Action("Create", "Attendance")" class="btn btn-primary btn-lg w-100 py-3">
+                                <i class="fas fa-check-circle"></i><br>
+                                <small>Mark Attendance</small>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="@Url.Action("Calendar", "Attendance")" class="btn btn-info btn-lg w-100 py-3">
+                                <i class="fas fa-calendar"></i><br>
+                                <small>View Calendar</small>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="@Url.Action("Reports", "Attendance")" class="btn btn-warning btn-lg w-100 py-3">
+                                <i class="fas fa-chart-bar"></i><br>
+                                <small>View Reports</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Attendance -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Today's Attendance (@DateTime.Now.ToString("dddd, MMMM dd"))</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.TodaysAttendance != null && ViewBag.TodaysAttendance.Count > 0)
+                    {
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Check-In</th>
+                                            <th>Check-Out</th>
+                                            <th>Status</th>
+                                            <th>Hours</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var item in ViewBag.TodaysAttendance)
+                                    {
+                                        // FIX: Handle dynamic objects properly
+                                        var employeeName = item.Employee?.Name ?? "N/A";
+                                        var checkIn = item.CheckIn as DateTime? ?? DateTime.MinValue;
+                                        var checkOut = item.CheckOut as DateTime?;
+                                        var status = item.Status as string ?? "Unknown";
+
+                                                <tr>
+                                                    <td>@employeeName</td>
+                                                    <td>@checkIn.ToString("hh:mm tt")</td>
+                                                    <td>
+                                                @if (checkOut.HasValue && checkOut.Value != DateTime.MinValue)
+                                                {
+                                                    @checkOut.Value.ToString("hh:mm tt")
+                                                }
+                                                else
+                                                {
+                                                                <span class="text-muted">N/A</span>
+                                                }
+                                                    </td>
+                                                    <td>
+                                                @if (status == "Present")
+                                                {
+                                                                <span class="badge bg-success">@status</span>
+                                                }
+                                                else if (status == "Late")
+                                                {
+                                                                <span class="badge bg-warning">@status</span>
+                                                }
+                                                else
+                                                {
+                                                                <span class="badge bg-secondary">@status</span>
+                                                }
+                                                    </td>
+                                                    <td>
+                                                @if (checkOut.HasValue && checkOut.Value != DateTime.MinValue)
+                                                {
+                                                    var hours = (checkOut.Value - checkIn).TotalHours;
+                                                                <span class="badge bg-info">@hours.ToString("0.00") hrs</span>
+                                                }
+                                                else
+                                                {
+                                                                <span class="text-muted">N/A</span>
+                                                }
+                                                    </td>
+                                                </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                    }
+                    else
+                    {
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                                <h5>No attendance marked for today</h5>
+                                <p>Mark attendance to see records here</p>
+                                <a href="@Url.Action("Create", "Attendance")" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Mark Attendance
+                                </a>
+                            </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Employee Management -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Employee Management</h5>
+                </div>
+                <div class="card-body">
+                    <p>Add, edit, and manage employee information</p>
+                    <a href="@Url.Action("Create", "Attendance")" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-cog"></i> Manage Employees
+                    </a>
+                </div>
+            </div>
+
+            <!-- Attendance Tracking -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> Attendance Tracking</h5>
+                </div>
+                <div class="card-body">
+                    <p>Mark daily attendance and view records</p>
+                    <a href="@Url.Action("Index", "Attendance")" class="btn btn-outline-success w-100">
+                        <i class="fas fa-list"></i> View Attendance
+                    </a>
+                </div>
+            </div>
+
+            <!-- Reports & Analytics -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Reports & Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <p>Generate attendance reports and analytics</p>
+                    <a href="@Url.Action("Reports", "Attendance")" class="btn btn-outline-warning w-100">
+                        <i class="fas fa-chart-line"></i> View Reports
+                    </a>
+                </div>
+            </div>
+
+            <!-- Attendance Stats -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-chart-area"></i> Today's Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Attendance Rate</h6>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: @ViewBag.AttendanceRate%" 
+                                 aria-valuenow="@ViewBag.AttendanceRate" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                @ViewBag.AttendanceRate%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center p-2 border rounded bg-success bg-opacity-10">
+                                <h4 class="text-success mb-0">@ViewBag.PresentToday</h4>
+                                <small class="text-muted">Present</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-2 border rounded bg-danger bg-opacity-10">
+                                <h4 class="text-danger mb-0">@ViewBag.AbsentToday</h4>
+                                <small class="text-muted">Absent</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<style>
+    .card {
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    .btn-lg {
+        font-size: 1.5rem;
+    }
+    .display-4 {
+        font-size: 3rem;
+        font-weight: bold;
+    }
+</style>

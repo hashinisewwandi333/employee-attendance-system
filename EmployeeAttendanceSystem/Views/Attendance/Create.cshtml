@@ -1,0 +1,124 @@
+﻿@model EmployeeAttendanceSystem.Models.Attendance
+@{
+    ViewData["Title"] = "Create Attendance";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-plus-circle"></i> Add Attendance Record</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <!-- Employee Selection -->
+                        <div class="mb-3">
+                            <label asp-for="EmployeeId" class="form-label">Select Employee</label>
+                            <select asp-for="EmployeeId" class="form-select" required>
+                                <option value="">-- Select Employee --</option>
+                                @if (ViewBag.Employees != null)
+                                {
+                                    @foreach (var emp in ViewBag.Employees)
+                                    {
+                                                <option value="@emp.Value">@emp.Text</option>
+                                    }
+                                }
+                                else
+                                {
+                                        <option value="1">John Doe (Manager)</option>
+                                        <option value="2">Jane Smith (Developer)</option>
+                                        <option value="3">Robert Brown (Assistant)</option>
+                                }
+                            </select>
+                            <span asp-validation-for="EmployeeId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Date Selection -->
+                        <div class="mb-3">
+                            <label asp-for="Date" class="form-label">Date</label>
+                            <input asp-for="Date" type="date" class="form-control" 
+                                   value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                            <span asp-validation-for="Date" class="text-danger"></span>
+                        </div>
+
+                        <!-- Check In Time -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CheckIn" class="form-label">Check In Time</label>
+                                <input asp-for="CheckIn" type="time" class="form-control" 
+                                       value="@DateTime.Now.ToString("HH:mm")" required />
+                                <span asp-validation-for="CheckIn" class="text-danger"></span>
+                            </div>
+
+                            <!-- Check Out Time -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CheckOut" class="form-label">Check Out Time (Optional)</label>
+                                <input asp-for="CheckOut" type="time" class="form-control" />
+                                <span asp-validation-for="CheckOut" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label">Status</label>
+                            <select asp-for="Status" class="form-select" required>
+                                <option value="">-- Select Status --</option>
+                                <option value="Present" selected>Present</option>
+                                <option value="Absent">Absent</option>
+                                <option value="Late">Late</option>
+                                <option value="Leave">Leave</option>
+                                <option value="Half Day">Half Day</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+
+                        <!-- Remarks -->
+                        <div class="mb-3">
+                            <label asp-for="Remarks" class="form-label">Remarks (Optional)</label>
+                            <textarea asp-for="Remarks" class="form-control" rows="3" 
+                                      placeholder="Enter any remarks..."></textarea>
+                            <span asp-validation-for="Remarks" class="text-danger"></span>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Calendar" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Calendar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Attendance
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+        <script>
+            // Set default values
+            document.addEventListener('DOMContentLoaded', function() {
+                // Set CheckOut time to 5:00 PM by default
+                var checkOutInput = document.querySelector('input[name="CheckOut"]');
+                if (checkOutInput && !checkOutInput.value) {
+                    checkOutInput.value = '17:00';
+                }
+
+                // If date is coming from calendar click
+                var urlParams = new URLSearchParams(window.location.search);
+                var dateParam = urlParams.get('date');
+                if (dateParam) {
+                    document.querySelector('input[name="Date"]').value = dateParam;
+                }
+            });
+        </script>
+}

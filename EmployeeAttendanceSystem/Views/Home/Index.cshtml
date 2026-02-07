@@ -1,0 +1,172 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="container mt-4">
+    <div class="text-center mb-5">
+        <h1 class="display-4">Employee Attendance Management System</h1>
+        <p class="lead">Efficiently manage employee attendance and generate reports</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Employees</h5>
+                    <h2>@ViewBag.TotalEmployees</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Attendance Records</h5>
+                    <h2>@ViewBag.TotalAttendance</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Current Month</h5>
+                    <h2>@DateTime.Now.ToString("MMM yyyy")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Today's Date</h5>
+                    <h2>@DateTime.Now.ToString("dd-MM-yyyy")</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="btn-group" role="group">
+                        <!-- FIXED: Employee → Employees -->
+                        <a asp-controller="Employees" asp-action="Create" class="btn btn-success">
+                            <i class="fas fa-user-plus"></i> Add Employee
+                        </a>
+                        <a asp-controller="Attendance" asp-action="Create" class="btn btn-primary">
+                            <i class="fas fa-calendar-plus"></i> Mark Attendance
+                        </a>
+                        <a asp-controller="Attendance" asp-action="Calendar" class="btn btn-info">
+                            <i class="fas fa-calendar-alt"></i> View Calendar
+                        </a>
+                        <a asp-controller="Attendance" asp-action="Summary" class="btn btn-warning">
+                            <i class="fas fa-chart-bar"></i> View Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Features -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                    <h4 class="card-title">Employee Management</h4>
+                    <p class="card-text">Add, edit, and manage employee information</p>
+                    <!-- FIXED: Employee → Employees -->
+                    <a asp-controller="Employees" asp-action="Index" class="btn btn-outline-primary">Manage Employees</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                    <h4 class="card-title">Attendance Tracking</h4>
+                    <p class="card-text">Mark daily attendance and view records</p>
+                    <a asp-controller="Attendance" asp-action="Index" class="btn btn-outline-success">View Attendance</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-pie fa-3x text-info mb-3"></i>
+                    <h4 class="card-title">Reports & Analytics</h4>
+                    <p class="card-text">Generate attendance reports and analytics</p>
+                    <a asp-controller="Attendance" asp-action="Summary" class="btn btn-outline-info">View Reports</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">System Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle text-primary me-2"></i>Getting Started</h6>
+                            <ul>
+                                <li>Add employees using the "Add Employee" button</li>
+                                <li>Mark daily attendance for employees</li>
+                                <li>View calendar for monthly overview</li>
+                                <li>Generate reports for analysis</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-cogs text-success me-2"></i>System Features</h6>
+                            <ul>
+                                <li>Employee database management</li>
+                                <li>Daily attendance tracking</li>
+                                <li>Calendar view for attendance</li>
+                                <li>Monthly summary reports</li>
+                                <li>Responsive design for all devices</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Font Awesome -->
+@section Styles {
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+}
+
+<style>
+    .card {
+        transition: transform 0.3s;
+        border-radius: 10px;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .btn-group .btn {
+        margin: 0 5px;
+        border-radius: 5px;
+    }
+
+    .display-4 {
+        color: #2c3e50;
+        font-weight: bold;
+    }
+</style>

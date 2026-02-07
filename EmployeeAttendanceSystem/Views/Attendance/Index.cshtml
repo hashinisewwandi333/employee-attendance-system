@@ -1,0 +1,131 @@
+﻿
+@model IEnumerable<EmployeeAttendanceSystem.Models.Attendance>
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Attendance Calendar";
+
+    int currentYear = ViewBag.CurrentYear ?? DateTime.Now.Year;
+    int currentMonth = ViewBag.CurrentMonth ?? DateTime.Now.Month;
+
+    var employees = ViewBag.Employees as List<EmployeeAttendanceSystem.Models.Employee>
+                    ?? new List<EmployeeAttendanceSystem.Models.Employee>();
+
+    int? selectedEmployeeId = ViewBag.EmployeeId as int?;
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Attendance Calendar</h3>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Filter Section -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label>Select Month</label>
+                    <input type="month"
+                           class="form-control"
+                           id="monthSelector"
+                           value="@currentYear.ToString("0000")-@currentMonth.ToString("00")" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Select Employee</label>
+                    <select class="form-control" id="employeeSelector">
+                        <option value="">All Employees</option>
+                        @foreach (var emp in employees)
+                        {
+                                <option value="@emp.Id" selected="@(selectedEmployeeId == emp.Id)">
+                                @emp.Name
+                                </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" onclick="applyFilters()">
+                        Show
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calendar -->
+            @{
+                int daysInMonth = DateTime.DaysInMonth(currentYear, currentMonth);
+                DateTime firstDay = new DateTime(currentYear, currentMonth, 1);
+                int startDay = (int)firstDay.DayOfWeek;
+            }
+
+            <div class="calendar-grid">
+
+                <!-- Header -->
+                <div class="row calendar-header text-center">
+                    @for (int i = 0; i < 7; i++)
+                    {
+                            <div class="col fw-bold">
+                            @CultureInfo.CurrentCulture.DateTimeFormat.GetDayName((DayOfWeek)i)
+                            </div>
+                    }
+                </div>
+
+                <!-- Days -->
+                <div class="row">
+                    @for (int i = 0; i < startDay; i++)
+                    {
+                            <div class="col border"></div>
+                    }
+
+                    @for (int day = 1; day <= daysInMonth; day++)
+                    {
+                        var date = new DateTime(currentYear, currentMonth, day);
+                        var dayAttendance = Model?.Where(a => a.Date.Date == date.Date)
+                                           ?? Enumerable.Empty<EmployeeAttendanceSystem.Models.Attendance>();
+
+                            <div class="col border p-1">
+                                <strong>@day</strong>
+
+                            @foreach (var att in dayAttendance)
+                            {
+                                        <!-- FIXED: Simple inline check without @{
+                                } block -->
+                                        <div class="badge @((!string.IsNullOrEmpty(att.Status) && att.Status.ToLower() == "present") ? "bg-success" : "bg-danger") d-block mt-1">
+                                    @att.Employee?.Name
+                                        </div>
+                            }
+                            </div>
+
+                        if ((startDay + day) % 7 == 0)
+                        {
+                            @:</div><div class="row">
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <script>
+            function applyFilters() {
+                let month = document.getElementById("monthSelector").value;
+                let empId = document.getElementById("employeeSelector").value;
+
+                let url = '@Url.Action("Calendar", "Attendance")';
+
+                if (month) {
+                    let parts = month.split("-");
+                    url += `?year=${parts[0]}&month=${parts[1]}`;
+                }
+
+                if (empId) {
+                    url += (url.includes("?") ? "&" : "?") + `employeeId=${empId}`;
+                }
+
+                window.location.href = url;
+            }
+        </script>
+}
