@@ -1,7 +1,7 @@
-﻿-- 1. Employees Table එකේ Data බලන්න
+﻿-- 1. Employees Table  Data 
 SELECT * FROM Employees;
 
--- 2. Attendances Table එකේ Structure බලන්න
+-- 2. Attendances Table Structure
 SELECT 
     COLUMN_NAME, 
     DATA_TYPE, 
@@ -11,7 +11,7 @@ FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = 'Attendances'
 ORDER BY ORDINAL_POSITION;
 
--- 3. Foreign Key Constraints බලන්න
+-- 3. Foreign Key Constraints 
 SELECT 
     fk.name AS ForeignKeyName,
     OBJECT_NAME(fk.parent_object_id) AS TableName,
